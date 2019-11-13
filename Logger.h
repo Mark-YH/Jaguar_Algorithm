@@ -49,8 +49,13 @@ public:
     }
 
     template<class T>
-    void writeTab(T num) {
+    void writeComma(T num) {
         fOut << setprecision(20) << num << ',';
+    }
+
+    template<class T>
+    void writeTab(T num) {
+        fOut << setprecision(20) << num << '\t';
     }
 
     template<class T>

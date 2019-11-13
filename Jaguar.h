@@ -37,7 +37,9 @@ private:
 
     void seeAround(int i);
 
-    void speed_up(int i);
+    void speed_up(Logger *logger, int i);
+
+    void speed_down(Logger *logger, int i);
 
     void prtStatusAt(Logger *logger, int i);
 };

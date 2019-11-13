@@ -46,17 +46,17 @@ void Jaguar::seeAround(int i) {
     this->cntCalculation += 2;
 
     // Right position & fitness
-    logger.writeTab(this->cntCalculation - 1);
-    logger.writeTab(rPos);
-    logger.writeTab(rFitness);
-    logger.writeTab(this->step * this->rate);
+    logger.writeComma(this->cntCalculation - 1);
+    logger.writeComma(rPos);
+    logger.writeComma(rFitness);
+    logger.writeComma(this->step * this->rate);
     logger.writeLine('R');
 
     // Left position & fitness
-    logger.writeTab(this->cntCalculation);
-    logger.writeTab(lPos);
-    logger.writeTab(lFitness);
-    logger.writeTab(this->step * this->rate);
+    logger.writeComma(this->cntCalculation);
+    logger.writeComma(lPos);
+    logger.writeComma(lFitness);
+    logger.writeComma(this->step * this->rate);
     logger.writeLine('L');
 
     if (rFitness <= lFitness && rFitness < this->fitness) { // Turn right is a better way.
@@ -84,8 +84,92 @@ void Jaguar::seeAround(int i) {
     }
 }
 
-void Jaguar::speed_up(int i) {
+void Jaguar::speed_up(Logger *logger, int i) {
+    logger->writeLine("Speed-up:");
 
+    double nextFitness;
+    float nextPosition = this->position[i];
+
+    while (true) {
+        nextPosition = this->direction * this->step * this->rate + nextPosition;
+
+        // Check if next position is outside of the domain.
+        if (nextPosition > model->getDomain().upper || nextPosition < model->getDomain().lower) {
+            logger->writeComma("Out of range at: ");
+            logger->writeLine(nextPosition);
+            break;
+        }
+
+        nextFitness = this->model->calcFitness(nextPosition);
+        cntCalculation++;
+
+        // Occur a worse fitness which means that position is worse than the last one so that stopping speed-up.
+        if (nextFitness > this->fitness) {
+            logger->writeComma("Next position has worse fitness: ");
+            logger->writeLine(nextFitness);
+
+            prtStatusAt(logger, i);
+            break;
+        }
+
+        // Move
+        this->position[i] = nextPosition;
+        this->fitness = nextFitness;
+
+        // Check if it needs update best fitness
+        if (this->fitness < this->bestFitness) {
+            this->bestPosition[i] = this->position[i];
+            this->bestFitness = this->fitness;
+        }
+
+        prtStatusAt(logger, i);
+
+        this->rate *= 2.0;
+    } // end of speed-up
+}
+
+void Jaguar::speed_down(Logger *logger, int i) {
+    logger->writeLine("Speed-down:");
+    this->rate /= 2.0;
+
+    float nextPosition;
+    double nextFitness;
+    // First speed-down
+    nextPosition = this->direction * step * this->rate + this->position[0];
+
+    // Check if next position is outside of the domain.
+    if (nextPosition > model->getDomain().upper || nextPosition < model->getDomain().lower) {
+        logger->writeComma("Out of range at: ");
+        logger->writeLine(nextPosition);
+    } else {
+        nextFitness = this->model->calcFitness(nextPosition);
+        cntCalculation++;
+
+        logger->writeLine("First step of speed-down:");
+        logger->writeComma(cntCalculation);
+        logger->writeComma(nextPosition);
+        logger->writeComma(nextFitness);
+        logger->writeLine(this->step * this->rate);
+
+        if (this->fitness > nextFitness) {
+            // Move
+            this->position[i] = nextPosition;
+            this->fitness = nextFitness;
+            //}
+            // Check if it needs update best fitness
+            if (this->fitness < this->bestFitness) {
+                this->bestPosition[i] = this->position[i];
+                this->bestFitness = this->fitness;
+            }
+        }
+    }
+
+    // The others speed-down
+    logger->writeLine("The others speed-down");
+    while (this->rate != 1) {
+        this->rate /= 2;
+        seeAround(i);
+    }
 }
 
 void Jaguar::hunting() {
@@ -102,87 +186,9 @@ void Jaguar::hunting() {
             }
             this->rate *= 2.0;
 
-            logger.writeLine("Speed-up:");
+            speed_up(&logger, i);
 
-            double nextFitness;
-            float nextPosition = this->position[i];
-
-            while (true) {
-                nextPosition = this->direction * this->step * this->rate + nextPosition;
-
-                // Check if next position is outside of the domain.
-                if (nextPosition > model->getDomain().upper || nextPosition < model->getDomain().lower) {
-                    logger.writeTab("Out of range at: ");
-                    logger.writeLine(nextPosition);
-                    break;
-                }
-
-                nextFitness = this->model->calcFitness(nextPosition);
-                cntCalculation++;
-
-                // Occur a worse fitness which means that position is worse than the last one so that stopping speed-up.
-                if (nextFitness > this->fitness) {
-                    logger.writeTab("Next position has worse fitness: ");
-                    logger.writeLine(nextFitness);
-
-                    prtStatusAt(&logger, i);
-                    break;
-                }
-
-                // Move
-                this->position[i] = nextPosition;
-                this->fitness = nextFitness;
-
-                // Check if it needs update best fitness
-                if (this->fitness < this->bestFitness) {
-                    this->bestPosition[i] = this->position[i];
-                    this->bestFitness = this->fitness;
-                }
-
-                prtStatusAt(&logger, i);
-
-                this->rate *= 2.0;
-            } // end of speed-up
-
-            logger.writeLine("Speed-down:");
-            this->rate /= 2.0;
-
-            // First speed-down
-            nextPosition = this->direction * step * this->rate + this->position[0];
-
-            // Check if next position is outside of the domain.
-            if (nextPosition > model->getDomain().upper || nextPosition < model->getDomain().lower) {
-                logger.writeTab("Out of range at: ");
-                logger.writeLine(nextPosition);
-            } else {
-                nextFitness = this->model->calcFitness(nextPosition);
-                cntCalculation++;
-
-                logger.writeLine("First step of speed-down:");
-                logger.writeTab(cntCalculation);
-                logger.writeTab(nextPosition);
-                logger.writeTab(nextFitness);
-                logger.writeLine(this->step * this->rate);
-
-                if (this->fitness > nextFitness) {
-                    // Move
-                    this->position[i] = nextPosition;
-                    this->fitness = nextFitness;
-                    //}
-                    // Check if it needs update best fitness
-                    if (this->fitness < this->bestFitness) {
-                        this->bestPosition[i] = this->position[i];
-                        this->bestFitness = this->fitness;
-                    }
-                }
-            }
-
-            // The others speed-down
-            logger.writeLine("The others speed-down");
-            while (this->rate != 1) {
-                this->rate /= 2;
-                seeAround(i);
-            }
+            speed_down(&logger, i);
 
             // next speed cycle
             this->step /= 2.0;
@@ -211,8 +217,8 @@ void Jaguar::taboo() {
 }
 
 void Jaguar::prtStatusAt(Logger *logger, int i) {
-    logger->writeTab(cntCalculation);
-    logger->writeTab(this->position[i]);
-    logger->writeTab(this->fitness);
+    logger->writeComma(cntCalculation);
+    logger->writeComma(this->position[i]);
+    logger->writeComma(this->fitness);
     logger->writeLine(this->step * this->rate);
 }
