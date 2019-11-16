@@ -5,7 +5,6 @@
 #ifndef JA_ABSOLUTE_LOGGER_H
 #define JA_ABSOLUTE_LOGGER_H
 
-#include "Logger.h"
 #include <iomanip>
 #include <iostream>
 #include <fstream>
