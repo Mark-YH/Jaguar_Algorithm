@@ -8,6 +8,8 @@
 #include "Model.h"
 #include "Logger.h"
 
+#define EPANEL 0
+
 class Jaguar {
 public:
     Jaguar() = delete;

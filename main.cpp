@@ -3,7 +3,8 @@
 #include <chrono>
 
 int main() {
-    std::remove("../log/hunting.csv");
+    std::remove("../log/ja.epin");
+    std::remove("../log/hunting1.csv");
     std::remove("../log/see_around.csv");
     auto start = std::chrono::steady_clock::now();
     srand(114);

@@ -58,6 +58,11 @@ public:
     }
 
     template<class T>
+    void writeSpace(T num) {
+        fOut << setprecision(20) << num << ' ';
+    }
+
+    template<class T>
     void writeLine(T num) {
         fOut << setprecision(20) << num << endl;
     }
