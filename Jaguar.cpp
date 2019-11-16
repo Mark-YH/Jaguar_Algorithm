@@ -186,6 +186,11 @@ void Jaguar::speed_up(Logger *logger, int i) {
         if (this->fitness < this->bestFitness) {
             this->bestPosition[i] = this->position[i];
             this->bestFitness = this->fitness;
+
+            // Check if it found best
+            if (this->bestFitness == 0 && this->foundBestAt == 0) {
+                this->foundBestAt = cntCalculation;
+            }
         }
 
         prtStatusAt(logger, i);
@@ -239,11 +244,16 @@ void Jaguar::speed_down(Logger *logger, int i) {
             // Move
             this->position[i] = nextPosition[i];
             this->fitness = nextFitness;
-            //}
+
             // Check if it needs update best fitness
             if (this->fitness < this->bestFitness) {
                 this->bestPosition[i] = this->position[i];
                 this->bestFitness = this->fitness;
+
+                // Check if it found best
+                if (this->bestFitness == 0 && this->foundBestAt == 0) {
+                    this->foundBestAt = cntCalculation;
+                }
             }
         }
     }
@@ -279,7 +289,16 @@ void Jaguar::hunting() {
             seeAround(&logSeeAround, i);
 #endif
             if (tmpFitness == fitness) {
-                step /= 2.0;
+                float exp;
+
+                exp = floor((log(this->step) / log(2) - 23) / 2);
+                if (exp < -149)
+                    exp = -149;
+
+                this->step = powf(2, exp);
+                std::cout << setprecision(50) << this->position[i] << '\t';
+                std::cout << setprecision(50) << this->rate * this->step << std::endl;
+
                 continue;
             }
             this->rate *= 2.0;
