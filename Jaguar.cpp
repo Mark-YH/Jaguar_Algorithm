@@ -135,9 +135,9 @@ void Jaguar::seeAround(Logger *logger, int i) {
         this->bestFitness = this->fitness;
 
         if (this->bestFitness == 0 && this->foundBestAt == 0 && rFitness == 0) {
-            this->foundBestAt = cntCalculation - 1;
+            this->foundBestAt = rCount;
         } else if (this->bestFitness == 0 && this->foundBestAt == 0 && lFitness == 0) {
-            this->foundBestAt = cntCalculation;
+            this->foundBestAt = lCount;
         }
     }
 }
@@ -186,6 +186,11 @@ void Jaguar::speed_up(Logger *logger, int i) {
         if (this->fitness < this->bestFitness) {
             this->bestPosition[i] = this->position[i];
             this->bestFitness = this->fitness;
+
+            // Check if it found best
+            if (this->bestFitness == 0 && this->foundBestAt == 0) {
+                this->foundBestAt = cntCalculation;
+            }
         }
 
         prtStatusAt(logger, i);
@@ -244,6 +249,11 @@ void Jaguar::speed_down(Logger *logger, int i) {
             if (this->fitness < this->bestFitness) {
                 this->bestPosition[i] = this->position[i];
                 this->bestFitness = this->fitness;
+
+                // Check if it found best
+                if (this->bestFitness == 0 && this->foundBestAt == 0) {
+                    this->foundBestAt = cntCalculation;
+                }
             }
         }
     }
