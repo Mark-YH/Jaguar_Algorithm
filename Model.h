@@ -32,7 +32,9 @@ public:
 
     Domain getDomain();
 
-    double calcFitness(float pos);
+    double calcFitness(float *pos);
+
+    bool isOutOfRange(float position);
 
 private:
     Functions function;

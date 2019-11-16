@@ -35,7 +35,7 @@ private:
     double bestFitness;
     float *bestPosition;
 
-    void seeAround(int i);
+    void seeAround(Logger *logger, int i);
 
     void speed_up(Logger *logger, int i);
 

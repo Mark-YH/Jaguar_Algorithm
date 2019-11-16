@@ -13,60 +13,82 @@ Jaguar::Jaguar(Model *model) {
     this->position = new float[dim];
     Domain domain = this->model->getDomain();
 
-    this->bestFitness = INT_MAX;
     this->bestPosition = new float[dim];
     this->direction = 1.0f;
     this->rate = 1.0f;
     this->foundBestAt = 0;
 
-    //TODO function should write in one line
-    double tmp = 0; // for fitness
-
     for (int i = 0; i < dim; i++) {
         this->position[i] = rand() / (float) RAND_MAX * (domain.upper - domain.lower) + domain.lower;
         this->bestPosition[i] = this->position[i];
-
-        //TODO function should write in one line
-        tmp += this->model->calcFitness(this->position[i]);
     }
-    this->fitness = tmp;
+
+    this->fitness = this->model->calcFitness(this->position);
+    this->bestFitness = this->fitness;
     cntCalculation = 1; // Initialization calculated once of fitness.
+
+#if EPANEL
+    Logger ePanel("../log/ja.epin");
+#endif
 }
 
-void Jaguar::seeAround(int i) {
-    Logger logger("../log/see_around.csv");
-    float rPos, lPos;
+void Jaguar::seeAround(Logger *logger, int i) {
+    float *rPos, *lPos;
     double rFitness, lFitness;
+    int rCount, lCount;
+    lPos = new float[this->model->getDimension()];
+    rPos = new float[this->model->getDimension()];
 
-    rPos = this->position[i] + this->step * this->rate;
-    lPos = this->position[i] - this->step * this->rate;
+    for (int j = 0; j < this->model->getDimension(); j++) {
+        if (j == i) {
+            rPos[j] = this->position[j] + this->step * this->rate;
+            lPos[j] = this->position[j] - this->step * this->rate;
+        } else {
+            rPos[j] = this->position[j];
+            lPos[j] = this->position[j];
+        }
+    }
 
-    rFitness = this->model->calcFitness(rPos);
-    lFitness = this->model->calcFitness(lPos);
-    this->cntCalculation += 2;
+    if (this->model->isOutOfRange(rPos[i])) {
+        rFitness = INT_MAX;
+    } else {
+        rFitness = this->model->calcFitness(rPos);
+        this->cntCalculation++;
+    }
+
+    rCount = cntCalculation;
+
+    if (this->model->isOutOfRange(lPos[i])) {
+        lFitness = INT_MAX;
+    } else {
+        lFitness = this->model->calcFitness(lPos);
+        this->cntCalculation++;
+    }
+
+    lCount = cntCalculation;
 
     // Right position & fitness
-    logger.writeComma(this->cntCalculation - 1);
-    logger.writeComma(rPos);
-    logger.writeComma(rFitness);
-    logger.writeComma(this->step * this->rate);
-    logger.writeLine('R');
+    logger->writeComma(rCount);
+    logger->writeComma(rPos[i]);
+    logger->writeComma(rFitness);
+    logger->writeComma(this->step * this->rate);
+    logger->writeLine('R');
 
     // Left position & fitness
-    logger.writeComma(this->cntCalculation);
-    logger.writeComma(lPos);
-    logger.writeComma(lFitness);
-    logger.writeComma(this->step * this->rate);
-    logger.writeLine('L');
+    logger->writeComma(lCount);
+    logger->writeComma(lPos[i]);
+    logger->writeComma(lFitness);
+    logger->writeComma(this->step * this->rate);
+    logger->writeLine('L');
 
     if (rFitness <= lFitness && rFitness < this->fitness) { // Turn right is a better way.
         // Turn right
-        this->position[i] = rPos;
+        this->position[i] = rPos[i];
         this->fitness = rFitness;
         this->direction = 1;
     } else if (rFitness > lFitness && lFitness < this->fitness) { // Turn left is a better way.
         // Turn left
-        this->position[i] = lPos;
+        this->position[i] = lPos[i];
         this->fitness = lFitness;
         this->direction = -1;
     }
@@ -88,15 +110,18 @@ void Jaguar::speed_up(Logger *logger, int i) {
     logger->writeLine("Speed-up:");
 
     double nextFitness;
-    float nextPosition = this->position[i];
+    float *nextPosition;
+    nextPosition = new float[this->model->getDimension()];
+
+    memcpy(nextPosition, this->position, sizeof(float) * this->model->getDimension());
 
     while (true) {
-        nextPosition = this->direction * this->step * this->rate + nextPosition;
+        nextPosition[i] = this->direction * this->step * this->rate + nextPosition[i];
 
         // Check if next position is outside of the domain.
-        if (nextPosition > model->getDomain().upper || nextPosition < model->getDomain().lower) {
+        if (this->model->isOutOfRange(nextPosition[i])) {
             logger->writeComma("Out of range at: ");
-            logger->writeLine(nextPosition);
+            logger->writeLine(nextPosition[i]);
             break;
         }
 
@@ -113,7 +138,7 @@ void Jaguar::speed_up(Logger *logger, int i) {
         }
 
         // Move
-        this->position[i] = nextPosition;
+        this->position[i] = nextPosition[i];
         this->fitness = nextFitness;
 
         // Check if it needs update best fitness
@@ -132,28 +157,32 @@ void Jaguar::speed_down(Logger *logger, int i) {
     logger->writeLine("Speed-down:");
     this->rate /= 2.0;
 
-    float nextPosition;
+    float *nextPosition;
     double nextFitness;
+
+    nextPosition = new float[this->model->getDimension()];
+    memcpy(nextPosition, this->position, sizeof(float) * this->model->getDimension());
+
     // First speed-down
-    nextPosition = this->direction * step * this->rate + this->position[0];
+    nextPosition[i] = this->direction * step * this->rate + this->position[0];
 
     // Check if next position is outside of the domain.
-    if (nextPosition > model->getDomain().upper || nextPosition < model->getDomain().lower) {
+    if (this->model->isOutOfRange(nextPosition[i])) {
         logger->writeComma("Out of range at: ");
-        logger->writeLine(nextPosition);
+        logger->writeLine(nextPosition[i]);
     } else {
         nextFitness = this->model->calcFitness(nextPosition);
         cntCalculation++;
 
         logger->writeLine("First step of speed-down:");
         logger->writeComma(cntCalculation);
-        logger->writeComma(nextPosition);
+        logger->writeComma(nextPosition[i]);
         logger->writeComma(nextFitness);
         logger->writeLine(this->step * this->rate);
 
         if (this->fitness > nextFitness) {
             // Move
-            this->position[i] = nextPosition;
+            this->position[i] = nextPosition[i];
             this->fitness = nextFitness;
             //}
             // Check if it needs update best fitness
@@ -168,18 +197,24 @@ void Jaguar::speed_down(Logger *logger, int i) {
     logger->writeLine("The others speed-down");
     while (this->rate != 1) {
         this->rate /= 2;
-        seeAround(i);
+        seeAround(logger, i);
     }
 }
 
 void Jaguar::hunting() {
-    Logger logger("../log/hunting.csv");
-    this->step = powf(2.0, (floor)(log(this->model->getDomain().upper) / log(2)) - 11);
-
     for (int i = 0; i < this->model->getDimension(); i++) {
+        Logger logger("../log/hunting" + std::to_string(i + 1) + ".csv");
+
+        this->fitness = INT_MAX;
+        this->bestFitness = INT_MAX;
+        this->foundBestAt = 0;
+        this->rate = 1.0f;
+        this->step = powf(2.0, (floor)(log(this->model->getDomain().upper) / log(2)) - 11);
+
         while (this->position[i] + this->step * this->rate != this->position[i]) {
             double tmpFitness = this->fitness;
-            seeAround(i);
+            Logger logSeeAround("../log/see_around.csv");
+            seeAround(&logSeeAround, i);
             if (tmpFitness == fitness) {
                 step /= 2.0;
                 continue;

@@ -26,15 +26,30 @@ Domain Model::getDomain() {
     return this->domain;
 }
 
-double Model::calcFitness(float pos) {
+double Model::calcFitness(float *pos) {
+    double fitness = 0;
+    //TODO function should write in one line
     switch (this->function) {
         case Absolute:
-            return absolute(pos);
+            for (int i = 0; i < this->dimension; i++) {
+                fitness += absolute(pos[i]);
+            }
+            return fitness;
         case Sphere:
-            return sphere(pos);
+            for (int i = 0; i < this->dimension; i++) {
+                fitness += sphere(pos[i]);
+            }
+            return fitness;
         case Rastrigin:
-            return rastrigin(pos);
+            for (int i = 0; i < this->dimension; i++) {
+                fitness += rastrigin(pos[i]);
+            }
+            return fitness;
     }
+}
+
+bool Model::isOutOfRange(float position) {
+    return (position > this->domain.upper || position < this->domain.lower);
 }
 
 double Model::absolute(float pos) {
@@ -42,7 +57,7 @@ double Model::absolute(float pos) {
 }
 
 double Model::sphere(float pos) {
-    return pow(2, pos);
+    return powf(pos, 2);
 }
 
 double Model::rastrigin(float pos) {
