@@ -291,12 +291,14 @@ void Jaguar::hunting() {
             if (tmpFitness == fitness) {
                 float exp;
 
-                exp = floor((log(this->step) / log(2) - 23) / 2);
+                exp = log2(abs(this->position[i])) - 23;
+//                exp = floor((log(this->step) / log(2) - 149) / 2);
                 if (exp < -149)
                     exp = -149;
 
                 this->step = powf(2, exp);
                 std::cout << setprecision(50) << this->position[i] << '\t';
+                std::cout << setprecision(50) << this->step << '\t';
                 std::cout << setprecision(50) << this->rate * this->step << std::endl;
 
                 continue;
