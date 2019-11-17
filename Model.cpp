@@ -44,6 +44,7 @@ double Model::calcFitness(float *pos) {
             for (int i = 0; i < this->dimension; i++) {
                 fitness += rastrigin(pos[i]);
             }
+            fitness += 10.0 * this->dimension;
             return fitness;
     }
 }
@@ -61,5 +62,5 @@ double Model::sphere(float pos) {
 }
 
 double Model::rastrigin(float pos) {
-    return 0.0;
+    return pow(pos, 2.0) - 10.0 * cos(2.0 * acos(-1) * pos);
 }
