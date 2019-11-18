@@ -5,6 +5,7 @@
 #include "Jaguar.h"
 #include <cmath>
 #include <string>
+#include <climits>
 
 using std::ios;
 
@@ -39,7 +40,7 @@ Jaguar::Jaguar(Model *model) {
     ePanel.writeLine(domain.upper);
     ePanel.writeLine("Position :");
 
-    ePanel.writeSpace("*0");
+    ePanel.writeSpace("*1");
     ePanel.write(this->bestFitness);
     ePanel.writeSpace(":");
     for (int i = 0; i < this->model->getDimension(); i++) {
@@ -280,8 +281,9 @@ void Jaguar::hunting() {
         this->rate = 1.0f;
         this->step = powf(2.0, (floor)(log(this->model->getDomain().upper) / log(2)) - 11);
 
-        while (this->fitness != 0) {
-//        while (this->position[i] + this->step * this->rate != this->position[i]) {
+        int k = 0;
+        while (this->position[i] + this->step * this->rate != this->position[i]
+               || this->position[i] - this->step * this->rate != this->position[i]) {
             double tmpFitness = this->fitness;
 #if EPANEL
             seeAround(&logger, i);
@@ -290,20 +292,21 @@ void Jaguar::hunting() {
             seeAround(&logSeeAround, i);
 #endif
             if (tmpFitness == fitness) {
+                k++;
                 float exp;
 
-                exp = floor((log2(abs(this->position[i])) - 23) / 2);
-
-                if (exp < -149)
-                    exp = -149;
+                exp = floor((2.0 * log2(fabs(this->position[i])) - 23) / 2);
 
                 this->step = powf(2, exp);
-                std::cout << setprecision(50) << this->position[i] << '\t';
-                std::cout << setprecision(50) << this->step << '\t';
-                std::cout << setprecision(50) << this->rate * this->step << std::endl;
+
+                if (k > 1) {
+                    this->step /= powf(2.0, k - 1);
+                }
 
                 continue;
             }
+            k = 0;
+
             this->rate *= 2.0;
 
             speed_up(&logger, i);
@@ -324,6 +327,13 @@ void Jaguar::hunting() {
         logger.writeLine(this->bestFitness);
 #endif
     }
+    Logger logResult("../log/result.csv");
+    logResult.writeComma("Found 0: ");
+    logResult.writeLine(this->foundBestAt);
+    logResult.writeComma("Best: ");
+    logResult.writeLine(this->bestFitness);
+    logResult.writeComma("Total: ");
+    logResult.writeLine(this->cntCalculation);
 }
 
 void Jaguar::jump() {
