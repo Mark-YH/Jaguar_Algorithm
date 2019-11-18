@@ -280,7 +280,8 @@ void Jaguar::hunting() {
         this->rate = 1.0f;
         this->step = powf(2.0, (floor)(log(this->model->getDomain().upper) / log(2)) - 11);
 
-        while (this->position[i] + this->step * this->rate != this->position[i]) {
+        while (this->fitness != 0) {
+//        while (this->position[i] + this->step * this->rate != this->position[i]) {
             double tmpFitness = this->fitness;
 #if EPANEL
             seeAround(&logger, i);
@@ -291,8 +292,8 @@ void Jaguar::hunting() {
             if (tmpFitness == fitness) {
                 float exp;
 
-                exp = log2(abs(this->position[i])) - 23;
-//                exp = floor((log(this->step) / log(2) - 149) / 2);
+                exp = floor((log2(abs(this->position[i])) - 23) / 2);
+
                 if (exp < -149)
                     exp = -149;
 
