@@ -175,7 +175,10 @@ void Jaguar::speed_up(Logger *logger, int i) {
             logger->writeComma("Next position has worse fitness: ");
             logger->writeLine(nextFitness);
 #endif
-            prtStatusAt(logger, i);
+            logger->writeComma(this->cntCalculation);
+            logger->writeComma(nextPosition[i]);
+            logger->writeComma(nextFitness);
+            logger->writeLine(this->step * this->rate);
             break;
         }
 
