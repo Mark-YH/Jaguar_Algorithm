@@ -317,7 +317,11 @@ void Jaguar::hunting() {
             speed_down(&logger, i);
 
             // next speed cycle
-            this->step /= 2.0;
+            float exp;
+
+            exp = floor((2.0 * log2(fabs(this->position[i])) - 23) / 2);
+
+            this->step = powf(2, exp);
 
             if (this->bestFitness == 0 && this->foundBestAt == 0) {
                 this->foundBestAt = cntCalculation;
