@@ -276,7 +276,7 @@ void Jaguar::hunting() {
 #if EPANEL
         Logger logger("../log/ja.epin");
 #else
-        Logger logger("../log/hunting" + std::to_string(i + 1) + ".csv");
+        Logger logger("../log/hunting.csv");
 #endif
         this->fitness = INT_MAX;
         this->bestFitness = INT_MAX;
@@ -296,11 +296,13 @@ void Jaguar::hunting() {
 #endif
             if (tmpFitness == fitness) {
                 k++;
-                float exp;
 
-                exp = floor((2.0 * log2(fabs(this->position[i])) - 23) / 2);
-
-                this->step = powf(2, exp);
+                if (this->position[i] == 0) {
+                    this->step = powf(2, -75);
+                } else {
+                    float exp = floor((2.0 * log2(fabs(this->position[i])) - 23) / 2);
+                    this->step = powf(2, exp);
+                }
 
                 if (k > 1) {
                     this->step /= powf(2.0, k - 1);
@@ -317,11 +319,12 @@ void Jaguar::hunting() {
             speed_down(&logger, i);
 
             // next speed cycle
-            float exp;
-
-            exp = floor((2.0 * log2(fabs(this->position[i])) - 23) / 2);
-
-            this->step = powf(2, exp);
+            if (this->position[i] == 0) {
+                this->step = powf(2, -75);
+            } else {
+                float exp = floor((2.0 * log2(fabs(this->position[i])) - 23) / 2);
+                this->step = powf(2, exp);
+            }
 
             if (this->bestFitness == 0 && this->foundBestAt == 0) {
                 this->foundBestAt = cntCalculation;
