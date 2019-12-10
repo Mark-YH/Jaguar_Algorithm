@@ -8,7 +8,12 @@
 #include "Model.h"
 #include "Logger.h"
 
-#define EPANEL 0
+/*! @EPANEL:
+ * 0: print debug information in files
+ * 1: print e-panel format in files
+ * others number: No data printed
+ */
+#define EPANEL -1
 
 class Jaguar {
 public:

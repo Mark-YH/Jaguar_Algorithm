@@ -29,7 +29,7 @@ Jaguar::Jaguar(Model *model) {
     this->bestFitness = this->fitness;
     cntCalculation = 1; // Initialization calculated once of fitness.
 
-#if EPANEL
+#if EPANEL == 1
     Logger ePanel("../log/ja.epin");
     ePanel.writeSpace("Dimension :");
     ePanel.writeLine(dim);
@@ -85,7 +85,7 @@ void Jaguar::seeAround(Logger *logger, int i) {
 
     lCount = cntCalculation;
 
-#if EPANEL
+#if EPANEL == 1
     logger->write("*");
     logger->writeSpace(rCount);
     logger->write(this->bestFitness);
@@ -103,7 +103,7 @@ void Jaguar::seeAround(Logger *logger, int i) {
         logger->writeComma(lPos[k]);
     }
     logger->writeLine("10,0,12");
-#else
+#elif EPANEL == 0
     // Right position & fitness
     logger->writeComma(rCount);
     logger->writeComma(rPos[i]);
@@ -144,7 +144,7 @@ void Jaguar::seeAround(Logger *logger, int i) {
 }
 
 void Jaguar::speed_up(Logger *logger, int i) {
-#if !EPANEL
+#if EPANEL == 0
     logger->writeLine("Speed-up:");
 #endif
 
@@ -159,7 +159,7 @@ void Jaguar::speed_up(Logger *logger, int i) {
 
         // Check if next position is outside of the domain.
         if (this->model->isOutOfRange(nextPosition[i])) {
-#if !EPANEL
+#if EPANEL == 0
             logger->writeComma("Out of range at: ");
             logger->writeLine(nextPosition[i]);
 #endif
@@ -171,14 +171,15 @@ void Jaguar::speed_up(Logger *logger, int i) {
 
         // Occur a worse fitness which means that position is worse than the last one so that stopping speed-up.
         if (nextFitness > this->fitness) {
-#if !EPANEL
+#if EPANEL == 0
             logger->writeComma("Next position has worse fitness: ");
             logger->writeLine(nextFitness);
-#endif
+
             logger->writeComma(this->cntCalculation);
             logger->writeComma(nextPosition[i]);
             logger->writeComma(nextFitness);
             logger->writeLine(this->step * this->rate);
+#endif
             break;
         }
 
@@ -204,7 +205,7 @@ void Jaguar::speed_up(Logger *logger, int i) {
 }
 
 void Jaguar::speed_down(Logger *logger, int i) {
-#if !EPANEL
+#if EPANEL == 0
     logger->writeLine("Speed-down:");
 #endif
     this->rate /= 2.0;
@@ -220,7 +221,7 @@ void Jaguar::speed_down(Logger *logger, int i) {
 
     // Check if next position is outside of the domain.
     if (this->model->isOutOfRange(nextPosition[i])) {
-#if !EPANEL
+#if EPANEL == 0
         logger->writeComma("Out of range at: ");
         logger->writeLine(nextPosition[i]);
 #endif
@@ -228,7 +229,7 @@ void Jaguar::speed_down(Logger *logger, int i) {
         nextFitness = this->model->calcFitness(nextPosition);
         cntCalculation++;
 
-#if EPANEL
+#if EPANEL == 1
         logger->write("*");
         logger->writeSpace(this->cntCalculation);
         logger->write(this->bestFitness);
@@ -237,7 +238,7 @@ void Jaguar::speed_down(Logger *logger, int i) {
             logger->writeComma(nextPosition[k]);
         }
         logger->writeLine("10,0,12");
-#else
+#elif EPANEL == 0
         logger->writeLine("First step of speed-down:");
         logger->writeComma(cntCalculation);
         logger->writeComma(nextPosition[i]);
@@ -261,7 +262,7 @@ void Jaguar::speed_down(Logger *logger, int i) {
             }
         }
     }
-#if !EPANEL
+#if EPANEL == 0
     // The others speed-down
     logger->writeLine("The others speed-down");
 #endif
@@ -273,26 +274,29 @@ void Jaguar::speed_down(Logger *logger, int i) {
 
 void Jaguar::hunting() {
     for (int i = 0; i < this->model->getDimension(); i++) {
-#if EPANEL
-        Logger logger("../log/ja.epin");
+#if EPANEL == 1
+        Logger *logger = new Logger("../log/ja.epin");
+#elif EPANEL == 0
+        Logger *logger = new Logger("../log/hunting.csv");
 #else
-        Logger logger("../log/hunting.csv");
+        Logger *logger = nullptr;
 #endif
         this->fitness = INT_MAX;
         this->bestFitness = INT_MAX;
         this->foundBestAt = 0;
         this->rate = 1.0f;
-        this->step = powf(2.0, (floor)(log(this->model->getDomain().upper) / log(2)) - 11);
+        this->step = powf(2.0, floor(log2(this->model->getDomain().upper)) - 11);
 
         int k = 0;
         while (this->position[i] + this->step * this->rate != this->position[i]
                || this->position[i] - this->step * this->rate != this->position[i]) {
             double tmpFitness = this->fitness;
-#if EPANEL
-            seeAround(&logger, i);
+#if EPANEL == 0
+            Logger *logSeeAround = new Logger("../log/see_around.csv");
+            seeAround(logSeeAround, i);
+            delete logSeeAround;
 #else
-            Logger logSeeAround("../log/see_around.csv");
-            seeAround(&logSeeAround, i);
+            seeAround(logger, i);
 #endif
             if (tmpFitness == fitness) {
                 k++;
@@ -314,9 +318,9 @@ void Jaguar::hunting() {
 
             this->rate *= 2.0;
 
-            speed_up(&logger, i);
+            speed_up(logger, i);
 
-            speed_down(&logger, i);
+            speed_down(logger, i);
 
             // next speed cycle
             if (this->position[i] == 0) {
@@ -330,20 +334,16 @@ void Jaguar::hunting() {
                 this->foundBestAt = cntCalculation;
             }
         }
-#if !EPANEL
-        logger.write("Found 0: ");
-        logger.writeLine(this->foundBestAt);
-        logger.write("Best: ");
-        logger.writeLine(this->bestFitness);
-#endif
+        delete logger;
     }
-    Logger logResult("../log/result.csv");
-    logResult.writeComma("Found 0: ");
-    logResult.writeLine(this->foundBestAt);
-    logResult.writeComma("Best: ");
-    logResult.writeLine(this->bestFitness);
-    logResult.writeComma("Total: ");
-    logResult.writeLine(this->cntCalculation);
+    Logger *logResult = new Logger("../log/result.csv");
+    logResult->writeComma("Found 0: ");
+    logResult->writeLine(this->foundBestAt);
+    logResult->writeComma("Best: ");
+    logResult->writeLine(this->bestFitness);
+    logResult->writeComma("Total: ");
+    logResult->writeLine(this->cntCalculation);
+    delete logResult;
 }
 
 void Jaguar::jump() {
@@ -359,7 +359,7 @@ void Jaguar::taboo() {
 }
 
 void Jaguar::prtStatusAt(Logger *logger, int i) {
-#if EPANEL
+#if EPANEL == 1
     logger->write("*");
     logger->writeSpace(this->cntCalculation);
     logger->write(this->bestFitness);
@@ -368,7 +368,7 @@ void Jaguar::prtStatusAt(Logger *logger, int i) {
         logger->writeComma(this->position[k]);
     }
     logger->writeLine("10,0,12");
-#else
+#elif EPANEL == 0
     logger->writeComma(cntCalculation);
     logger->writeComma(this->position[i]);
     logger->writeComma(this->fitness);
