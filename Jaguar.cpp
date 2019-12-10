@@ -287,7 +287,7 @@ void Jaguar::hunting() {
         this->rate = 1.0f;
         this->step = powf(2.0, floor(log2(this->model->getDomain().upper)) - 11);
 
-        int k = 0;
+        bool isRepeat = false;
         while (this->position[i] + this->step * this->rate != this->position[i]
                || this->position[i] - this->step * this->rate != this->position[i]) {
             double tmpFitness = this->fitness;
@@ -299,36 +299,33 @@ void Jaguar::hunting() {
             seeAround(logger, i);
 #endif
             if (tmpFitness == fitness) {
-                k++;
+                if (isRepeat) {
+                    if (fabs(this->position[i]) < powf(2.0, -126)) {
+                        this->step = powf(2.0, floor(log2(this->step) - 149.0f) / 2.0f);
+                    } else {
+                        float exp = floor((log2(this->step)
+                                           + ceil((log2(fabs(this->position[i])) - 23.0f)))
+                                          / 2.0f);
+                        this->step = powf(2.0, exp);
+                    }
 
-                if (this->position[i] == 0) {
-                    this->step = powf(2, -75);
+                    if (this->position[i] == 0 && log2(this->step) <= -149) {
+                        this->step /= 2;
+                    } else if (log2(this->step) <= log2(fabs(position[i])) - 23) {
+                        this->step /= 2;
+                    }
                 } else {
-                    float exp = floor((2.0 * log2(fabs(this->position[i])) - 23) / 2);
-                    this->step = powf(2, exp);
+                    updateStep(i);
                 }
-
-                if (k > 1) {
-                    this->step /= powf(2.0, k - 1);
-                }
-
+                isRepeat = true;
                 continue;
             }
-            k = 0;
-
+            isRepeat = false;
             this->rate *= 2.0;
-
             speed_up(logger, i);
-
             speed_down(logger, i);
-
             // next speed cycle
-            if (this->position[i] == 0) {
-                this->step = powf(2, -75);
-            } else {
-                float exp = floor((2.0 * log2(fabs(this->position[i])) - 23) / 2);
-                this->step = powf(2, exp);
-            }
+            updateStep(i);
 
             if (this->bestFitness == 0 && this->foundBestAt == 0) {
                 this->foundBestAt = cntCalculation;
@@ -337,13 +334,24 @@ void Jaguar::hunting() {
         delete logger;
     }
     Logger *logResult = new Logger("../log/result.csv");
-    logResult->writeComma("Found 0: ");
-    logResult->writeLine(this->foundBestAt);
-    logResult->writeComma("Best: ");
+    logResult->writeComma(this->foundBestAt);
+    logResult->writeComma(this->cntCalculation);
     logResult->writeLine(this->bestFitness);
-    logResult->writeComma("Total: ");
-    logResult->writeLine(this->cntCalculation);
     delete logResult;
+}
+
+void Jaguar::updateStep(int i) {
+    float exp;
+
+    if (this->position[i] == 0) {
+        exp = -149;
+    } else if (fabs(this->position[i]) < powf(2.0, -126)) {
+        exp = ceil((log2(fabs(this->position[i])) - 149) / 2);
+    } else {
+        exp = ceil((log2(fabs(this->position[i])) - 11.5));
+    }
+
+    this->step = powf(2, exp);
 }
 
 void Jaguar::jump() {

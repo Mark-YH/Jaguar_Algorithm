@@ -48,6 +48,8 @@ private:
 
     void speed_down(Logger *logger, int i);
 
+    void updateStep(int i);
+
     void prtStatusAt(Logger *logger, int i);
 };
 
