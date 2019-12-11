@@ -85,6 +85,29 @@ void Jaguar::seeAround(Logger *logger, int i) {
 
     lCount = cntCalculation;
 
+    if (rFitness <= lFitness && rFitness < this->fitness) { // Turn right is a better way.
+        // Turn right
+        this->position[i] = rPos[i];
+        this->fitness = rFitness;
+        this->direction = 1;
+    } else if (rFitness > lFitness && lFitness < this->fitness) { // Turn left is a better way.
+        // Turn left
+        this->position[i] = lPos[i];
+        this->fitness = lFitness;
+        this->direction = -1;
+    }
+
+    // Check if it needs update best fitness
+    if (this->fitness < this->bestFitness) {
+        this->bestPosition[i] = this->position[i];
+        this->bestFitness = this->fitness;
+
+        if (this->bestFitness == 0 && this->foundBestAt == 0 && rFitness == 0) {
+            this->foundBestAt = cntCalculation - 1;
+        } else if (this->bestFitness == 0 && this->foundBestAt == 0 && lFitness == 0) {
+            this->foundBestAt = cntCalculation;
+        }
+    }
 #if EPANEL == 1
     logger->write("*");
     logger->writeSpace(rCount);
@@ -118,29 +141,6 @@ void Jaguar::seeAround(Logger *logger, int i) {
     logger->writeComma(this->step * this->rate);
     logger->writeLine('L');
 #endif
-    if (rFitness <= lFitness && rFitness < this->fitness) { // Turn right is a better way.
-        // Turn right
-        this->position[i] = rPos[i];
-        this->fitness = rFitness;
-        this->direction = 1;
-    } else if (rFitness > lFitness && lFitness < this->fitness) { // Turn left is a better way.
-        // Turn left
-        this->position[i] = lPos[i];
-        this->fitness = lFitness;
-        this->direction = -1;
-    }
-
-    // Check if it needs update best fitness
-    if (this->fitness < this->bestFitness) {
-        this->bestPosition[i] = this->position[i];
-        this->bestFitness = this->fitness;
-
-        if (this->bestFitness == 0 && this->foundBestAt == 0 && rFitness == 0) {
-            this->foundBestAt = cntCalculation - 1;
-        } else if (this->bestFitness == 0 && this->foundBestAt == 0 && lFitness == 0) {
-            this->foundBestAt = cntCalculation;
-        }
-    }
 }
 
 void Jaguar::speed_up(Logger *logger, int i) {
@@ -304,7 +304,7 @@ void Jaguar::hunting() {
                         this->step = powf(2.0, floor(log2(this->step) - 149.0f) / 2.0f);
                     } else {
                         float exp = floor((log2(this->step)
-                                           + ceil((log2(fabs(this->position[i])) - 23.0f)))
+                                           + (log2(fabs(this->position[i])) - 23.0f))
                                           / 2.0f);
                         this->step = powf(2.0, exp);
                     }
