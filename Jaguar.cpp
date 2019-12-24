@@ -50,6 +50,12 @@ Jaguar::Jaguar(Model *model) {
 #endif
 }
 
+Jaguar::~Jaguar() {
+    this->model = nullptr;
+    delete this->position;
+    delete this->bestPosition;
+}
+
 void Jaguar::seeAround(Logger *logger, int i) {
     float *rPos, *lPos;
     double rFitness, lFitness;
@@ -141,6 +147,8 @@ void Jaguar::seeAround(Logger *logger, int i) {
     logger->writeComma(this->step * this->rate);
     logger->writeLine('L');
 #endif
+    delete rPos;
+    delete lPos;
 }
 
 void Jaguar::speed_up(Logger *logger, int i) {
@@ -197,11 +205,11 @@ void Jaguar::speed_up(Logger *logger, int i) {
                 this->foundBestAt = cntCalculation;
             }
         }
-
         prtStatusAt(logger, i);
 
         this->rate *= 2.0;
     } // end of speed-up
+    delete nextPosition;
 }
 
 void Jaguar::speed_down(Logger *logger, int i) {
@@ -262,6 +270,7 @@ void Jaguar::speed_down(Logger *logger, int i) {
             }
         }
     }
+    delete nextPosition;
 #if EPANEL == 0
     // The others speed-down
     logger->writeLine("The others speed-down");
@@ -286,6 +295,7 @@ void Jaguar::hunting() {
         this->foundBestAt = 0;
         this->rate = 1.0f;
         this->step = powf(2.0, floor(log2(this->model->getDomain().upper)) - 11);
+//        updateStep(i);
 
         bool isRepeat = false;
         while (this->position[i] + this->step * this->rate != this->position[i]
@@ -334,9 +344,10 @@ void Jaguar::hunting() {
         delete logger;
     }
     Logger *logResult = new Logger("../log/result.csv");
-    logResult->writeComma(this->foundBestAt);
-    logResult->writeComma(this->cntCalculation);
-    logResult->writeLine(this->bestFitness);
+    logResult->writeLine(this->foundBestAt);
+//    logResult->writeComma(this->foundBestAt);
+//    logResult->writeComma(this->cntCalculation);
+//    logResult->writeLine(this->bestFitness);
     delete logResult;
 }
 
@@ -346,9 +357,9 @@ void Jaguar::updateStep(int i) {
     if (this->position[i] == 0) {
         exp = -149;
     } else if (fabs(this->position[i]) < powf(2.0, -126)) {
-        exp = ceil((log2(fabs(this->position[i])) - 149) / 2);
+        exp = floor((log2(fabs(this->position[i])) - 149) / 2);
     } else {
-        exp = ceil((log2(fabs(this->position[i])) - 11.5));
+        exp = floor((log2(fabs(this->position[i])) - 0));
     }
 
     this->step = powf(2, exp);

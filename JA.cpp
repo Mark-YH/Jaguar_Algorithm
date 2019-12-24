@@ -6,12 +6,17 @@
 
 JA::JA() {
     // set-up model
-    this->model.setDimension(1);
-    this->model.setDomain(-100.0f, 100.0f);
-    this->model.setFunction(Absolute);
+    this->model = new Model();
+    this->model->setDimension(1);
+    this->model->setDomain(-100.0f, 100.0f);
+    this->model->setFunction(Absolute);
+}
+
+JA::~JA() {
+    delete this->model;
 }
 
 void JA::run() {
-    Jaguar jaguar(&this->model);
+    Jaguar jaguar(this->model);
     jaguar.hunting();
 }

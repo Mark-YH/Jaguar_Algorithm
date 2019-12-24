@@ -22,6 +22,8 @@ public:
     explicit
     Jaguar(Model *model);
 
+    ~Jaguar();
+
     void hunting();
 
     void jump();

@@ -11,7 +11,7 @@ int main() {
     auto start = std::chrono::steady_clock::now();
     srand(114);
     int k = 0;
-    while (k < 1) {
+    while (k < 1000) {
         JA ja;
         ja.run();
         k++;

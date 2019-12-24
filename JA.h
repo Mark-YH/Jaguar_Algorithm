@@ -11,10 +11,12 @@ class JA {
 public:
     JA();
 
+    ~JA();
+
     void run();
 
 private:
-    Model model;
+    Model *model;
 };
 
 #endif //JA_ABSOLUTE_JA_H
