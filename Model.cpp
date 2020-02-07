@@ -45,6 +45,11 @@ double Model::calcFitness(float *pos) {
                 fitness += rastrigin(pos[i]);
             }
             return fitness;
+        case Jason:
+            for (int i = 0; i < this->dimension; i++) {
+                fitness += jason(pos[i], i);
+            }
+            return fitness;
     }
 }
 
@@ -62,4 +67,9 @@ double Model::sphere(float pos) {
 
 double Model::rastrigin(float pos) {
     return 0.0;
+}
+
+double Model::jason(float pos, int dim) {
+    dim += 1; // dim: 1 to n
+    return (pos - dim) * (pos - dim);
 }

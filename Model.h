@@ -10,6 +10,7 @@ enum Functions {
     Absolute,
     Sphere,
     Rastrigin,
+    Jason,
 };
 
 class Domain {
@@ -46,6 +47,8 @@ private:
     double sphere(float pos);
 
     double rastrigin(float pos);
+
+    double jason(float pos, int dim);
 };
 
 #endif //JA_ABSOLUTE_MODEL_H
