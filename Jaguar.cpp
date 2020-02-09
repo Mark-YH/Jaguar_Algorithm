@@ -294,16 +294,21 @@ void Jaguar::hunting() {
         this->bestFitness = INT_MAX;
         this->foundBestAt = 0;
         this->rate = 1;
+#if A == 0
         this->step = powf(2.0, floor(log2(this->model->getDomain().upper)) - 11.0);
-//        updateStep(i);
-
+#elif A == 1
+        updateStep(i);
+#endif
+#if B == 1
         bool isRepeat = false;
+#endif
         while (this->position[i] + this->step * this->rate != this->position[i]
                || this->position[i] - this->step * this->rate != this->position[i]) {
             double tmpFitness = this->fitness;
             seeAround(logger, i);
 
             if (tmpFitness == fitness) {
+#if B == 1
                 if (isRepeat) {
                     if (fabs(this->position[i]) < powf(2.0, -126.0)) {
                         this->step = powf(2.0, floor(log2(this->step) - 149.0) / 2.0);
@@ -321,15 +326,24 @@ void Jaguar::hunting() {
                     updateStep(i);
                 }
                 isRepeat = true;
+#elif B == 0
+                this->step /= 2.0;
+#endif
                 continue;
             }
+#if B == 1
             isRepeat = false;
+#endif
             this->rate *= 2.0;
             speed_up(logger, i);
             speed_down(logger, i);
-            // next speed cycle
-            updateStep(i);
 
+            // next speed cycle
+#if C == 0
+            this->step /= 2.0;
+#elif C == 1
+            updateStep(i);
+#endif
             if (this->bestFitness == 0 && this->foundBestAt == 0) {
                 this->foundBestAt = cntCalculation;
             }

@@ -14,6 +14,20 @@
  * others number: No data printed
  */
 #define EPANEL -1
+#define A 0
+#define B 0
+#define C 0
+/**
+ * @param A: the method of calculating initial step
+ *      0: by domain
+ *      1: by current position
+ * @param B: the method of calculating reduced step
+ *      0: divided by 2
+ *      1: by current position
+ * @param C: the method of squeeze
+ *      0: divided by 2
+ *      1: bisection
+ */
 
 class Jaguar {
 public:
