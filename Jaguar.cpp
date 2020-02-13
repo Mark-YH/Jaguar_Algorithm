@@ -291,7 +291,7 @@ void Jaguar::hunting() {
 #elif A == 1
         updateStep(i);
 #endif
-#if B == 1
+#if C == 1
         bool isRepeat = false;
 #endif
         while (this->position[i] + this->step * this->rate != this->position[i]
@@ -301,7 +301,7 @@ void Jaguar::hunting() {
             seeAround(logger, i);
 
             if (tmpFitness == fitness) {
-#if B == 1
+#if C == 1
                 if (isRepeat) {
                     if (fabs(this->position[i]) < powf(2.0, -126.0)) {
                         this->step = powf(2.0, floor(log2(this->step) - 149.0) / 2.0);
@@ -317,12 +317,12 @@ void Jaguar::hunting() {
                     }
                 }
                 isRepeat = true;
-#elif B == 0
+#elif C == 0
                 this->step /= 2.0;
 #endif
                 continue;
             }
-#if B == 1
+#if C == 1
             isRepeat = false;
 #endif
             this->status = Speed_up;
@@ -332,9 +332,9 @@ void Jaguar::hunting() {
             speed_down(logger, i);
 
             // next speed cycle
-#if C == 0
+#if B == 0
             this->step /= 2.0;
-#elif C == 1
+#elif B == 1
             updateStep(i);
 #endif
             if (this->bestFitness == 0 && this->foundBestAt == 0) {

@@ -14,9 +14,9 @@
  * others number: No data printed
  */
 #define EPANEL -1
-#define A 0
-#define B 0
-#define C 0
+#define A 1
+#define B 1
+#define C 1
 /**
  * @param A: the method of calculating initial step
  *      0: by domain
