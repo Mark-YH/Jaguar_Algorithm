@@ -29,6 +29,12 @@
  *      1: bisection
  */
 
+enum Status {
+    Left_right_check = 0,
+    Speed_up,
+    Speed_down,
+};
+
 class Jaguar {
 public:
     Jaguar() = delete;
@@ -47,6 +53,7 @@ public:
     void taboo();
 
 private:
+    Status status;
     Model *model;
     float *position;
     double fitness;
@@ -67,6 +74,10 @@ private:
     void updateStep(int i);
 
     void prtStatusAt(Logger *logger, int i);
+
+    static string enum2str(int e);
+
+    static string direction2str(float direction);
 };
 
 #endif //JA_ABSOLUTE_JAGUAR_H

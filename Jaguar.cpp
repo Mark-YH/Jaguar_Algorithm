@@ -4,7 +4,6 @@
 
 #include "Jaguar.h"
 #include <cmath>
-#include <string>
 #include <climits>
 
 using std::ios;
@@ -138,24 +137,22 @@ void Jaguar::seeAround(Logger *logger, int i) {
     logger->writeComma(rPos[i]);
     logger->writeComma(rFitness);
     logger->writeComma(this->step * this->rate);
-    logger->writeLine('R');
+    logger->writeComma('R');
+    logger->writeLine(enum2str(this->status));
 
     // Left position & fitness
     logger->writeComma(lCount);
     logger->writeComma(lPos[i]);
     logger->writeComma(lFitness);
     logger->writeComma(this->step * this->rate);
-    logger->writeLine('L');
+    logger->writeComma('L');
+    logger->writeLine(enum2str(this->status));
 #endif
     delete rPos;
     delete lPos;
 }
 
 void Jaguar::speed_up(Logger *logger, int i) {
-#if EPANEL == 0
-    logger->writeLine("Speed-up:");
-#endif
-
     double nextFitness;
     float *nextPosition;
     nextPosition = new float[this->model->getDimension()];
@@ -180,13 +177,12 @@ void Jaguar::speed_up(Logger *logger, int i) {
         // Occur a worse fitness which means that position is worse than the last one so that stopping speed-up.
         if (nextFitness > this->fitness) {
 #if EPANEL == 0
-            logger->writeComma("Next position has worse fitness: ");
-            logger->writeLine(nextFitness);
-
             logger->writeComma(this->cntCalculation);
             logger->writeComma(nextPosition[i]);
             logger->writeComma(nextFitness);
-            logger->writeLine(this->step * this->rate);
+            logger->writeComma(this->step * this->rate);
+            logger->writeComma(direction2str(this->direction));
+            logger->writeLine(enum2str(this->status));
 #endif
             break;
         }
@@ -213,9 +209,6 @@ void Jaguar::speed_up(Logger *logger, int i) {
 }
 
 void Jaguar::speed_down(Logger *logger, int i) {
-#if EPANEL == 0
-    logger->writeLine("Speed-down:");
-#endif
     this->rate /= 2.0;
 
     float *nextPosition;
@@ -247,11 +240,12 @@ void Jaguar::speed_down(Logger *logger, int i) {
         }
         logger->writeLine("10,0,12");
 #elif EPANEL == 0
-        logger->writeLine("First step of speed-down:");
         logger->writeComma(cntCalculation);
         logger->writeComma(nextPosition[i]);
         logger->writeComma(nextFitness);
-        logger->writeLine(this->step * this->rate);
+        logger->writeComma(this->step * this->rate);
+        logger->writeComma(direction2str(this->direction));
+        logger->writeLine(enum2str(this->status));
 #endif
         if (this->fitness > nextFitness) {
             // Move
@@ -271,10 +265,8 @@ void Jaguar::speed_down(Logger *logger, int i) {
         }
     }
     delete nextPosition;
-#if EPANEL == 0
+
     // The others speed-down
-    logger->writeLine("The others speed-down");
-#endif
     while (this->rate != 1) {
         this->rate /= 2.0;
         seeAround(logger, i);
@@ -305,6 +297,7 @@ void Jaguar::hunting() {
         while (this->position[i] + this->step * this->rate != this->position[i]
                || this->position[i] - this->step * this->rate != this->position[i]) {
             double tmpFitness = this->fitness;
+            this->status = Left_right_check;
             seeAround(logger, i);
 
             if (tmpFitness == fitness) {
@@ -322,8 +315,6 @@ void Jaguar::hunting() {
                     } else if (log2(this->step) <= (log2(fabs(position[i]))) - 23.0) {
                         this->step /= 2.0;
                     }
-                } else {
-                    updateStep(i);
                 }
                 isRepeat = true;
 #elif B == 0
@@ -334,8 +325,10 @@ void Jaguar::hunting() {
 #if B == 1
             isRepeat = false;
 #endif
+            this->status = Speed_up;
             this->rate *= 2.0;
             speed_up(logger, i);
+            this->status = Speed_down;
             speed_down(logger, i);
 
             // next speed cycle
@@ -398,6 +391,27 @@ void Jaguar::prtStatusAt(Logger *logger, int i) {
     logger->writeComma(cntCalculation);
     logger->writeComma(this->position[i]);
     logger->writeComma(this->fitness);
-    logger->writeLine(this->step * this->rate);
+    logger->writeComma(this->step * this->rate);
+    logger->writeComma(direction2str(this->direction));
+    logger->writeLine(enum2str(this->status));
 #endif
+}
+
+string Jaguar::enum2str(int e) {
+    switch (e) {
+        case 0:
+            return "L-R check";
+        case 1:
+            return "Spd-up";
+        case 2:
+            return "Spd-down";
+        default:
+            return "Status error";
+    }
+}
+
+string Jaguar::direction2str(float direction) {
+    if (direction == 1) return "R";
+    else if (direction == -1) return "L";
+    else return "direction error";
 }
