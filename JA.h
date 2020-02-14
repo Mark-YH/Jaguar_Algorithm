@@ -13,7 +13,7 @@ public:
 
     ~JA();
 
-    void run();
+    void run(float e);
 
 private:
     Model *model;

@@ -16,7 +16,7 @@ JA::~JA() {
     delete this->model;
 }
 
-void JA::run() {
+void JA::run(float e) {
     Jaguar jaguar(this->model);
-    jaguar.hunting();
+    jaguar.hunting(e);
 }

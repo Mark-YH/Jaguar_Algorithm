@@ -5,6 +5,7 @@
 #include "Jaguar.h"
 #include <cmath>
 #include <climits>
+#include <string>
 
 using std::ios;
 
@@ -273,7 +274,7 @@ void Jaguar::speed_down(Logger *logger, int i) {
     }
 }
 
-void Jaguar::hunting() {
+void Jaguar::hunting(float e) {
     for (int i = 0; i < this->model->getDimension(); i++) {
 #if EPANEL == 1
         Logger *logger = new Logger("../log/ja.epin");
@@ -287,9 +288,9 @@ void Jaguar::hunting() {
         this->foundBestAt = 0;
         this->rate = 1;
 #if A == 0
-        this->step = powf(2.0, floor(log2(this->model->getDomain().upper)) - 11.0);
+        this->step = powf(2.0, floor(log2(this->model->getDomain().upper)) - e);
 #elif A == 1
-        updateStep(i);
+        updateStep(i, e);
 #endif
         while (this->position[i] + this->step * this->rate != this->position[i]
                || this->position[i] - this->step * this->rate != this->position[i]) {
@@ -326,7 +327,7 @@ void Jaguar::hunting() {
 #if B == 0
             this->step /= 2.0;
 #elif B == 1
-            updateStep(i);
+            updateStep(i, e);
 #endif
             if (this->bestFitness == 0 && this->foundBestAt == 0) {
                 this->foundBestAt = cntCalculation;
@@ -334,7 +335,7 @@ void Jaguar::hunting() {
         }
         delete logger;
     }
-    Logger *logResult = new Logger("../log/result.csv");
+    Logger *logResult = new Logger("../log/result" + std::to_string(e) + ".csv");
 //    logResult->writeLine(this->foundBestAt);
     logResult->writeComma(this->foundBestAt);
     logResult->writeComma(this->cntCalculation);
@@ -342,7 +343,7 @@ void Jaguar::hunting() {
     delete logResult;
 }
 
-void Jaguar::updateStep(int i) {
+void Jaguar::updateStep(int i, float e) {
     float exp;
 
     if (this->position[i] == 0) {
@@ -350,7 +351,7 @@ void Jaguar::updateStep(int i) {
     } else if (fabs(this->position[i]) < powf(2.0, -126.0)) {
         exp = floor((log2(fabs(this->position[i])) - 149.0) / 2.0);
     } else {
-        exp = floor(log2(fabs(this->position[i])) - 11.5);
+        exp = floor(log2(fabs(this->position[i])) - e);
     }
 
     this->step = powf(2.0, exp);

@@ -14,9 +14,9 @@
  * others number: No data printed
  */
 #define EPANEL -1
-#define A 1
-#define B 1
-#define C 1
+#define A 0
+#define B 0
+#define C 0
 /**
  * @param A: the method of calculating initial step
  *      0: by domain
@@ -44,7 +44,7 @@ public:
 
     ~Jaguar();
 
-    void hunting();
+    void hunting(float e);
 
     void jump();
 
@@ -71,7 +71,7 @@ private:
 
     void speed_down(Logger *logger, int i);
 
-    void updateStep(int i);
+    void updateStep(int i, float e);
 
     void prtStatusAt(Logger *logger, int i);
 

@@ -39,14 +39,19 @@ int main() {
     std::remove("../log/speed_up.csv");
     auto start = std::chrono::steady_clock::now();
     srand(114);
-    int k = 0;
-    while (k < 1000) {
-        JA ja;
-        ja.run();
-        k++;
+    float e = -6;
+    while (e <= 23) {
+        int k = 0;
+        while (k < 100000) {
+            JA ja;
+            ja.run(e);
+            k++;
+        }
+        e += 0.5;
     }
-    analyze();
+//    analyze();
     auto end = std::chrono::steady_clock::now();
     std::cout << "Time taken: " << std::chrono::duration<double>(end - start).count() << "s" << std::endl;
+    system("pause");
     return 0;
 }
