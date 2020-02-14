@@ -291,9 +291,6 @@ void Jaguar::hunting() {
 #elif A == 1
         updateStep(i);
 #endif
-#if C == 1
-        bool isRepeat = false;
-#endif
         while (this->position[i] + this->step * this->rate != this->position[i]
                || this->position[i] - this->step * this->rate != this->position[i]) {
             double tmpFitness = this->fitness;
@@ -302,29 +299,23 @@ void Jaguar::hunting() {
 
             if (tmpFitness == fitness) {
 #if C == 1
-                if (isRepeat) {
+                if (this->position[i] == 0 && log2(this->step) <= -149.0) {
+                    this->step /= 2.0;
+                } else if (log2(this->step) <= (log2(fabs(position[i]))) - 23.0) {
+                    this->step /= 2.0;
+                } else {
                     if (fabs(this->position[i]) < powf(2.0, -126.0)) {
                         this->step = powf(2.0, floor(log2(this->step) - 149.0) / 2.0);
                     } else {
                         float exp = floor((log2(this->step) + (log2(fabs(this->position[i])) - 23.0)) / 2.0);
                         this->step = powf(2.0, exp);
                     }
-
-                    if (this->position[i] == 0 && log2(this->step) <= -149.0) {
-                        this->step /= 2.0;
-                    } else if (log2(this->step) <= (log2(fabs(position[i]))) - 23.0) {
-                        this->step /= 2.0;
-                    }
                 }
-                isRepeat = true;
 #elif C == 0
                 this->step /= 2.0;
 #endif
                 continue;
             }
-#if C == 1
-            isRepeat = false;
-#endif
             this->status = Speed_up;
             this->rate *= 2.0;
             speed_up(logger, i);
