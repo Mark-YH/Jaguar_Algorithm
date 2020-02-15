@@ -305,7 +305,7 @@ void Jaguar::hunting() {
                     this->step /= 2.0;
                 } else {
                     if (fabs(this->position[i]) < powf(2.0, -126.0)) {
-                        this->step = powf(2.0, floor(log2(this->step) - 149.0) / 2.0);
+                        this->step = powf(2.0, floor((log2(this->step) - 149.0) / 2.0));
                     } else {
                         float exp = floor((log2(this->step) + (log2(fabs(this->position[i])) - 23.0)) / 2.0);
                         this->step = powf(2.0, exp);
