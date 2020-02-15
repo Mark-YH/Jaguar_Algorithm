@@ -306,7 +306,7 @@ void Jaguar::hunting(float e) {
                     this->step /= 2.0;
                 } else {
                     if (fabs(this->position[i]) < powf(2.0, -126.0)) {
-                        this->step = powf(2.0, floor(log2(this->step) - 149.0) / 2.0);
+                        this->step = powf(2.0, floor((log2(this->step) - 149.0) / 2.0));
                     } else {
                         float exp = floor((log2(this->step) + (log2(fabs(this->position[i])) - 23.0)) / 2.0);
                         this->step = powf(2.0, exp);
@@ -336,10 +336,10 @@ void Jaguar::hunting(float e) {
         delete logger;
     }
     Logger *logResult = new Logger("../log/result" + std::to_string(e) + ".csv");
-//    logResult->writeLine(this->foundBestAt);
-    logResult->writeComma(this->foundBestAt);
-    logResult->writeComma(this->cntCalculation);
-    logResult->writeLine(this->bestFitness);
+    logResult->writeLine(this->foundBestAt);
+//    logResult->writeComma(this->foundBestAt);
+//    logResult->writeComma(this->cntCalculation);
+//    logResult->writeLine(this->bestFitness);
     delete logResult;
 }
 
