@@ -299,9 +299,8 @@ void Jaguar::hunting() {
 
             if (tmpFitness == fitness) {
 #if C == 1
-                if (this->position[i] == 0 && log2(this->step) <= -149.0) {
-                    this->step /= 2.0;
-                } else if (log2(this->step) <= (log2(fabs(position[i]))) - 23.0) {
+                if (log2(this->step) <= -149.0 ||
+                    log2(this->step) <= (log2(fabs(this->position[i])) - 23.0)) {
                     this->step /= 2.0;
                 } else {
                     if (fabs(this->position[i]) < powf(2.0, -126.0)) {
