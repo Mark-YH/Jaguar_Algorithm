@@ -38,16 +38,17 @@ int main() {
     std::remove("../log/speed_down.csv");
     std::remove("../log/speed_up.csv");
     auto start = std::chrono::steady_clock::now();
-    srand(114);
+
     float e = -6;
     while (e <= 23) {
+        srand(114);
         int k = 0;
         while (k < 100000) {
             JA ja;
             ja.run(e);
             k++;
         }
-        e += 0.5;
+        e += 1;
     }
 //    analyze();
     auto end = std::chrono::steady_clock::now();
